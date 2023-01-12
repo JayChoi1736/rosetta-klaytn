@@ -1359,8 +1359,17 @@ func (kc *Client) populateTransactions(
 		return transactions, nil
 	}
 
+	var chainConfig params.ChainConfig
+
+	// Call `klay_getRewards` to get reward.
+
+	err = kc.c.CallContext(ctx, &chainConfig, "governance_chainConfigAt", toBlockNumArg(block.Number()))
+	if err != nil {
+		return nil, fmt.Errorf("cannot get block(%d) chainConfig: %w", block.Number(), err)
+	}
+
 	// before Kore Hardfork
-	if kc.p.KoreCompatibleBlock == nil || block.Number().Int64() < kc.p.KoreCompatibleBlock.Int64() {
+	if chainConfig.KoreCompatibleBlock == nil || block.Number().Cmp(chainConfig.KoreCompatibleBlock) < 0 {
 		rewardTx, rewardAddresses, rewardRatioMap, err = kc.blockRewardTransaction(block)
 		transactions = append(transactions, rewardTx)
 
@@ -1431,7 +1440,6 @@ func (kc *Client) populateTransactions(
 		var rewardInfo reward.RewardSpec
 
 		// Call `klay_getRewards` to get reward.
-
 		err = kc.c.CallContext(ctx, &rewardInfo, "klay_getRewards", toBlockNumArg(block.Number()))
 		if err != nil {
 			return nil, fmt.Errorf("cannot get block(%d) reward: %w", block.Number(), err)
