@@ -1434,7 +1434,7 @@ func (kc *Client) populateTransactions(
 
 		err = kc.c.CallContext(ctx, &rewardInfo, "klay_getRewards", toBlockNumArg(block.Number()))
 		if err != nil {
-			return nil, fmt.Errorf("cannot get block(%s) reward: %w", block.Number(), err)
+			return nil, fmt.Errorf("cannot get block(%d) reward: %w", block.Number(), err)
 		}
 
 		idx := int64(0)
@@ -1554,20 +1554,9 @@ func (kc *Client) getRewardAndRatioInfo(
 	rewardbase string,
 ) ([]string, map[string]*big.Int, *big.Int, error) { // nolint
 	govItems := make(map[string]interface{})
-	getRewards := make(map[string]interface{})
 	// Call `governance_itemsAt` to get reward ratio.
 
-	err := kc.c.CallContext(ctx, &getRewards, "klay_getRewards", block)
-	stakers, found := getRewards["stakers"].(string)
-	if !found {
-		return nil, nil, nil, fmt.Errorf("could not extract reward.ratio from %v", govItems)
-	}
-
-	if stakers == "0" {
-
-	}
-
-	err = kc.c.CallContext(ctx, &govItems, "governance_itemsAt", block)
+	err := kc.c.CallContext(ctx, &govItems, "governance_itemsAt", block)
 	if err != nil {
 		return nil, nil, nil, err
 	}
