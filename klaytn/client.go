@@ -1360,7 +1360,7 @@ func (kc *Client) populateTransactions(
 	}
 
 	// before Kore Hardfork
-	if kc.p.KoreCompatibleBlock != nil && block.Number().Int64() < kc.p.KoreCompatibleBlock.Int64() {
+	if kc.p.KoreCompatibleBlock == nil || block.Number().Int64() < kc.p.KoreCompatibleBlock.Int64() {
 		rewardTx, rewardAddresses, rewardRatioMap, err = kc.blockRewardTransaction(block)
 		transactions = append(transactions, rewardTx)
 
@@ -1426,14 +1426,13 @@ func (kc *Client) populateTransactions(
 			}
 		}
 	} else {
-		ctx := context.Background()
 
 		var ops []*RosettaTypes.Operation
 		var rewardInfo reward.RewardSpec
 
 		// Call `klay_getRewards` to get reward.
 
-		err = kc.c.CallContext(ctx, &rewardInfo, "klay_getRewards", block)
+		err = kc.c.CallContext(ctx, &rewardInfo, "klay_getRewards", toBlockNumArg(block.Number()))
 		if err != nil {
 			return nil, fmt.Errorf("cannot get block(%s) reward: %w", block.Number(), err)
 		}
