@@ -1360,7 +1360,7 @@ func (kc *Client) populateTransactions(
 	}
 
 	// before Kore Hardfork
-	if block.Number().Int64() < kc.p.KoreCompatibleBlock.Int64() {
+	if kc.p.KoreCompatibleBlock != nil && block.Number().Int64() < kc.p.KoreCompatibleBlock.Int64() {
 		rewardTx, rewardAddresses, rewardRatioMap, err = kc.blockRewardTransaction(block)
 		transactions = append(transactions, rewardTx)
 
@@ -1481,8 +1481,6 @@ func (kc *Client) populateTransactions(
 			transactions = append(transactions, transaction)
 		}
 	}
-
-	// use klay.getRewards() method for after Kore Hardfork
 
 	return transactions, nil
 }
